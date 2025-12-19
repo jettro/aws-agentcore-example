@@ -1,0 +1,30 @@
+{
+  "name": "bedrock-agentcore-cdk",
+  "version": "1.0.0",
+  "description": "AWS CDK infrastructure for Bedrock AgentCore project",
+  "bin": {
+    "bedrock-agentcore-cdk": "bin/app.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w",
+    "cdk": "cdk",
+    "deploy": "cdk deploy",
+    "deploy:all": "cdk deploy --all",
+    "destroy": "cdk destroy",
+    "synth": "cdk synth"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "aws-cdk": "^2.232.2",
+    "ts-node": "^10.9.2",
+    "typescript": "~5.7.2"
+  },
+  "dependencies": {
+    "@aws-cdk/aws-bedrock-agentcore-alpha": "^2.232.2-alpha.0",
+    "aws-cdk-lib": "^2.232.2",
+    "cdk-docker-image-deployment": "^0.0.932",
+    "constructs": "^10.4.2",
+    "source-map-support": "^0.5.21"
+  }
+}
