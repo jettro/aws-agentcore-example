@@ -32,7 +32,7 @@ All stacks use reusable constructs following best practices for separation of co
 ```
 aws-agentcore-example/
 ├── agent-java/                 # Java agent runtime
-│   ├── src/main/java/com/example/agent/
+│   ├── src/main/java/dev/jettro/agent/
 │   ├── Dockerfile
 │   └── pom.xml
 ├── cdk/                        # CDK infrastructure
@@ -120,15 +120,15 @@ cdk deploy BedrockAgentCoreStack/AgentCoreStack
 
 ## Automated Docker Image Build and Push
 
-The CDK infrastructure automatically builds and pushes the Docker image to ECR when you deploy the AgentCore stack. This is done using CDK's `DockerImageAsset` construct.
+The CDK infrastructure automatically builds and pushes the Docker image to ECR when you deploy the AgentCore stack. This is done using the `cdk-docker-image-deployment` package.
 
 **How it works:**
 1. When you deploy the AgentCore stack, CDK will:
    - Build the Java application (ensure JAR exists in `agent-java/target/`)
    - Build the Docker image from `agent-java/Dockerfile`
-   - Create a temporary ECR repository for the Docker asset
-   - Push the image to both the temporary repository and your target ECR repository
-   - Configure the AgentCore runtime to use the image
+   - Push the image to an intermediary CDK-managed ECR repository
+   - Use a CodeBuild project to copy the image to your custom ECR repository (`bedrock-agent-runtime`)
+   - Configure the AgentCore runtime to use the image from your repository
 
 **Before deployment**, ensure the JAR file exists:
 ```bash
@@ -178,6 +178,35 @@ The CDK will automatically detect changes, rebuild the Docker image, and deploy 
 - `cdk deploy` - Deploy stack to AWS
 - `cdk destroy` - Remove stack from AWS
 
+## Known Issues
+
+### Node.js 16 Lambda Functions Warning
+
+You may receive AWS notifications about Lambda functions using the deprecated Node.js 16 runtime. These Lambda functions are created by the `cdk-docker-image-deployment` package and are only used during CDK deployment to orchestrate the Docker image copying process.
+
+**Important notes:**
+- These Lambda functions are NOT part of your agent application runtime
+- They only execute during `cdk deploy` operations
+- Your Java-based agent runtime is unaffected
+- The functions will continue to work until AWS provides a migration deadline
+
+**Resolution:**
+- The `cdk-docker-image-deployment` package maintainers will update to a newer Node.js runtime in a future release
+- Monitor for package updates: `npm outdated cdk-docker-image-deployment`
+- Update the package when a new version is available: `npm update cdk-docker-image-deployment`
+
+## AgentCore Memory Integration
+
+This project includes AgentCore Memory with three built-in strategies:
+
+1. **Summarization Strategy** (Short-term): Maintains conversation summaries
+2. **Semantic Strategy** (Long-term): Stores and retrieves semantically similar information
+3. **User Preference Strategy** (Long-term): Tracks user preferences and patterns
+
+The memory ID is automatically passed to the agent runtime as the `AGENTCORE_MEMORY_ID` environment variable. The agent runtime has full permissions to interact with the memory, including creating events, managing records, and running extraction jobs.
+
+For detailed integration instructions, see `MEMORY_INTEGRATION.md`.
+
 ## Configuration
 
 ### Environment Variables
@@ -186,6 +215,10 @@ The CDK app reads these environment variables:
 
 - `AWS_ACCOUNT_ID` or `CDK_DEFAULT_ACCOUNT`: AWS account ID
 - `AWS_REGION` or `CDK_DEFAULT_REGION`: AWS region (defaults to us-east-1)
+
+The agent runtime receives these environment variables automatically:
+
+- `AGENTCORE_MEMORY_ID`: The ID of the AgentCore Memory instance
 
 ### Customization
 
