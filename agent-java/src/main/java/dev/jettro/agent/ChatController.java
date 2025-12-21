@@ -19,10 +19,11 @@ public class ChatController {
 
 	private final ChatClient chatClient;
     private final ChatMemory chatMemory;
+    private final LongTermMemoryProvider memoryProvider;
 
     private static final Logger logger = LoggerFactory.getLogger(ChatController.class);
 
-	public ChatController (ChatClient.Builder chatClient, ChatMemoryRepository memoryRepository){
+	public ChatController (ChatClient.Builder chatClient, ChatMemoryRepository memoryRepository, LongTermMemoryProvider memoryProvider){
         this.chatMemory = MessageWindowChatMemory.builder()
                 .chatMemoryRepository(memoryRepository)
                 .maxMessages(10)
@@ -32,7 +33,8 @@ public class ChatController {
                 .defaultAdvisors(MessageChatMemoryAdvisor.builder(chatMemory).build())
 				.defaultTools(new DateTimeTools())
 				.build();
-	}
+        this.memoryProvider = memoryProvider;
+    }
 
     @AgentCoreInvocation
     public String agentCoreHandler(PromptRequest promptRequest, AgentCoreContext agentCoreContext){
@@ -41,6 +43,7 @@ public class ChatController {
 
         return chatClient
                 .prompt()
+                .tools(new LongTermMemoryTool(memoryProvider, promptRequest.actor(), sessionId))
                 .advisors(a -> a.param(ChatMemory.CONVERSATION_ID, conversationId(promptRequest, sessionId)))
                 .user(promptRequest.prompt())
                 .call()

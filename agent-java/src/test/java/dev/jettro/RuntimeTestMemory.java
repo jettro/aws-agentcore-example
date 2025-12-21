@@ -9,15 +9,14 @@ import software.amazon.awssdk.services.bedrockagentcore.model.InvokeAgentRuntime
 import software.amazon.awssdk.utils.IoUtils;
 
 import java.io.IOException;
-import java.util.UUID;
 
-public class RuntimeTest {
+public class RuntimeTestMemory {
     public static void main(String[] args) {
         BedrockAgentCoreClient client = BedrockAgentCoreClient.builder()
                 .region(Region.EU_WEST_1)
                 .build();
 
-        String payload = "{\"prompt\": \"When talking about animals, I prefer dogs over cats\", \"actor\": \"jettro\"}";
+        String payload = "{\"prompt\": \"What would be a good name for my favourite animal?\", \"actor\": \"jettro\"}";
         String sessionId = "session-413e123e-c8c7-45a2-8d1c-5939c0e33b1e";
 
         InvokeAgentRuntimeRequest request = InvokeAgentRuntimeRequest.builder()
