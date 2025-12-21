@@ -11,6 +11,7 @@ export interface AgentCoreRuntimeConstructProps {
     runtimeName: string;
     dockerfilePath: string;
     imageTag?: string;
+    memoryId?: string;
 }
 
 export class AgentCoreRuntimeConstruct extends Construct {
@@ -37,11 +38,20 @@ export class AgentCoreRuntimeConstruct extends Construct {
             imageTag
         );
 
+        // Create environment variables for the runtime
+        const environmentVariables: { [key: string]: string } = {};
+        
+        // Add memory ID if provided
+        if (props.memoryId) {
+            environmentVariables['AGENTCORE_MEMORY_ID'] = props.memoryId;
+        }
+
         // Create Bedrock AgentCore Runtime with public network configuration
         this.runtime = new agentcore.Runtime(this, 'Runtime', {
             runtimeName: props.runtimeName,
             agentRuntimeArtifact: agentRuntimeArtifact,
             networkConfiguration: agentcore.RuntimeNetworkConfiguration.usingPublicNetwork(),
+            environmentVariables: Object.keys(environmentVariables).length > 0 ? environmentVariables : undefined,
         });
 
         // Ensure runtime depends on image deployment
@@ -64,5 +74,41 @@ export class AgentCoreRuntimeConstruct extends Construct {
                 `arn:aws:bedrock:*:${cdk.Stack.of(this).account}:inference-profile/*`,
             ],
         }));
+
+        // Add AgentCore Memory permissions if memory ID is provided
+        if (props.memoryId) {
+            this.runtime.role.addToPrincipalPolicy(new iam.PolicyStatement({
+                effect: iam.Effect.ALLOW,
+                actions: [
+                    // Memory operations
+                    'bedrock-agentcore:GetMemory',
+                    'bedrock-agentcore:PutMemory',
+                    'bedrock-agentcore:DeleteMemory',
+                    'bedrock-agentcore:ListMemories',
+                    // Event operations
+                    'bedrock-agentcore:CreateEvent',
+                    'bedrock-agentcore:GetEvent',
+                    'bedrock-agentcore:DeleteEvent',
+                    'bedrock-agentcore:ListEvents',
+                    // Memory record operations
+                    'bedrock-agentcore:GetMemoryRecord',
+                    'bedrock-agentcore:DeleteMemoryRecord',
+                    'bedrock-agentcore:ListMemoryRecords',
+                    'bedrock-agentcore:RetrieveMemoryRecords',
+                    'bedrock-agentcore:BatchCreateMemoryRecords',
+                    'bedrock-agentcore:BatchUpdateMemoryRecords',
+                    'bedrock-agentcore:BatchDeleteMemoryRecords',
+                    // Memory extraction jobs
+                    'bedrock-agentcore:StartMemoryExtractionJob',
+                    'bedrock-agentcore:ListMemoryExtractionJobs',
+                ],
+                resources: [
+                    // Allow access to the specific memory
+                    `arn:aws:bedrock-agentcore:${cdk.Stack.of(this).region}:${cdk.Stack.of(this).account}:memory/${props.memoryId}`,
+                    // Allow access to all memory strategies within this memory
+                    `arn:aws:bedrock-agentcore:${cdk.Stack.of(this).region}:${cdk.Stack.of(this).account}:memory/${props.memoryId}/*`,
+                ],
+            }));
+        }
     }
 }

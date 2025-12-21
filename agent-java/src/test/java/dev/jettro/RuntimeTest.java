@@ -17,8 +17,7 @@ public class RuntimeTest {
                 .region(Region.EU_WEST_1)
                 .build();
 
-        String payload = "{\"prompt\": \"tell me a short joke about cats\"}";
-//        String sessionId = "session-" + UUID.randomUUID().toString();
+        String payload = "{\"prompt\": \"When talking about animals, I prefer dogs over cats\", \"actor\": \"jettro\"}";
         String sessionId = "session-413e123e-c8c7-45a2-8d1c-5939c0e33b1e";
 
         InvokeAgentRuntimeRequest request = InvokeAgentRuntimeRequest.builder()
