@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.net.URI;
 import java.net.URL;
 import java.util.Date;
 import java.util.Map;
@@ -100,7 +101,7 @@ public class TokenValidatorService {
             String jwksUrl = String.format("https://cognito-idp.%s.amazonaws.com/%s/.well-known/jwks.json", 
                                           awsRegion, userPoolId);
             log.info("Fetching JWKS from: {}", jwksUrl);
-            jwkSet = JWKSet.load(new URL(jwksUrl));
+            jwkSet = JWKSet.load(new URI(jwksUrl).toURL());
         }
         
         // Find the key with matching keyId
@@ -109,7 +110,7 @@ public class TokenValidatorService {
             // Reload JWKS in case keys have been rotated
             String jwksUrl = String.format("https://cognito-idp.%s.amazonaws.com/%s/.well-known/jwks.json", 
                                           awsRegion, userPoolId);
-            jwkSet = JWKSet.load(new URL(jwksUrl));
+            jwkSet = JWKSet.load(new URI(jwksUrl).toURL());
             jwk = jwkSet.getKeyByKeyId(keyId);
             
             if (jwk == null) {

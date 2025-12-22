@@ -2,10 +2,10 @@ package dev.jettro.backend;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.nativex.hint.TypeHint;
+import org.springframework.aot.hint.annotation.RegisterReflectionForBinding;
 
 @SpringBootApplication
-@TypeHint(types = {
+@RegisterReflectionForBinding({
     com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent.class,
     com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent.class
 })

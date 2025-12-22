@@ -10,6 +10,7 @@
 agent-java/target/
 agent-java/*.jar
 *.class
+**/target/
 
 # CDK
 cdk/node_modules/
