@@ -12,6 +12,8 @@ export interface AgentCoreRuntimeConstructProps {
     dockerfilePath: string;
     imageTag?: string;
     memoryId?: string;
+    cognitoUserPoolId?: string;
+    cognitoClientId?: string;
 }
 
 export class AgentCoreRuntimeConstruct extends Construct {
@@ -46,12 +48,25 @@ export class AgentCoreRuntimeConstruct extends Construct {
             environmentVariables['AGENTCORE_MEMORY_ID'] = props.memoryId;
         }
 
+        // Configure OAuth authorizer if Cognito details are provided
+        let authorizerConfig: agentcore.AuthorizerConfig | undefined;
+        if (props.cognitoUserPoolId && props.cognitoClientId) {
+            const region = cdk.Stack.of(this).region;
+            const discoveryUrl = `https://cognito-idp.${region}.amazonaws.com/${props.cognitoUserPoolId}/.well-known/openid-configuration`;
+            
+            authorizerConfig = agentcore.AuthorizerConfig.customJwtAuthorizer({
+                discoveryUrl: discoveryUrl,
+                allowedClients: [props.cognitoClientId],
+            });
+        }
+
         // Create Bedrock AgentCore Runtime with public network configuration
         this.runtime = new agentcore.Runtime(this, 'Runtime', {
             runtimeName: props.runtimeName,
             agentRuntimeArtifact: agentRuntimeArtifact,
             networkConfiguration: agentcore.RuntimeNetworkConfiguration.usingPublicNetwork(),
             environmentVariables: Object.keys(environmentVariables).length > 0 ? environmentVariables : undefined,
+            authorizerConfig: authorizerConfig,
         });
 
         // Ensure runtime depends on image deployment

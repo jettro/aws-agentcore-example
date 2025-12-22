@@ -16,8 +16,8 @@ public class RuntimeTestMemory {
                 .region(Region.EU_WEST_1)
                 .build();
 
-        String payload = "{\"prompt\": \"What would be a good name for my favourite animal?\", \"actor\": \"jettro\"}";
-        String sessionId = "session-413e123e-c8c7-45a2-8d1c-5939c0e33b1e";
+        String payload = "{\"prompt\": \"This year was the first year we rented a buscamper. We loved the freedom. We visited Denmark and Switserland. What country do you suggest for next year?\", \"actor\": \"jettro\"}";
+        String sessionId = "session-413e123e-c8c7-45a2-8d1c-5939c0e33b1f";
 
         InvokeAgentRuntimeRequest request = InvokeAgentRuntimeRequest.builder()
                 .agentRuntimeArn("arn:aws:bedrock-agentcore:eu-west-1:778270100068:runtime/bedrock_agent_runtime-Lc8XuS252H")

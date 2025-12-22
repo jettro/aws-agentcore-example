@@ -7,6 +7,8 @@ import { AgentCoreMemoryConstruct } from '../constructs/agentcore-memory-constru
 
 export interface AgentCoreStackProps extends cdk.StackProps {
     repository: ecr.Repository;
+    cognitoUserPoolId?: string;
+    cognitoClientId?: string;
 }
 
 export class AgentCoreStack extends cdk.Stack {
@@ -40,6 +42,8 @@ export class AgentCoreStack extends cdk.Stack {
                 dockerfilePath: dockerfilePath,
                 runtimeName: 'bedrock_agent_runtime',
                 memoryId: this.memoryConstruct.memoryId,
+                cognitoUserPoolId: props.cognitoUserPoolId,
+                cognitoClientId: props.cognitoClientId,
             }
         );
 
