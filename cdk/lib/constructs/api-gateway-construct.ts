@@ -16,34 +16,15 @@ export class ApiGatewayConstruct extends Construct {
     constructor(scope: Construct, id: string, props: ApiGatewayConstructProps) {
         super(scope, id);
 
-        // Create CloudWatch Log Group for API Gateway
-        const logGroup = new logs.LogGroup(this, 'ApiGatewayLogs', {
-            logGroupName: `/aws/apigateway/agentcore-backend-api`,
-            retention: logs.RetentionDays.ONE_WEEK,
-            removalPolicy: cdk.RemovalPolicy.DESTROY,
-        });
-
         // Create REST API
         this.api = new apigateway.RestApi(this, 'BackendApi', {
             restApiName: 'AgentCore Backend API',
             description: 'API Gateway for AgentCore Backend Lambda',
             deployOptions: {
                 stageName: props.stageName || 'prod',
-                loggingLevel: apigateway.MethodLoggingLevel.INFO,
-                dataTraceEnabled: true,
+                // All logging disabled (requires account-level CloudWatch role setup)
+                // Can be enabled after setting up CloudWatch role via AWS Console or CLI
                 metricsEnabled: true,
-                accessLogDestination: new apigateway.LogGroupLogDestination(logGroup),
-                accessLogFormat: apigateway.AccessLogFormat.jsonWithStandardFields({
-                    caller: true,
-                    httpMethod: true,
-                    ip: true,
-                    protocol: true,
-                    requestTime: true,
-                    resourcePath: true,
-                    responseLength: true,
-                    status: true,
-                    user: true,
-                }),
             },
             defaultCorsPreflightOptions: {
                 allowOrigins: apigateway.Cors.ALL_ORIGINS, // TODO: Restrict in production

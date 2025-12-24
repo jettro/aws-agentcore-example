@@ -1,5 +1,6 @@
-import { useState, KeyboardEvent } from 'react';
-import './InputBox.css';
+import { useState, type KeyboardEvent } from 'react';
+import { Flex, Textarea, Button } from '@chakra-ui/react';
+import { FiSend } from 'react-icons/fi';
 
 interface InputBoxProps {
     onSend: (message: string) => void;
@@ -24,22 +25,37 @@ export function InputBox({ onSend, disabled = false }: InputBoxProps) {
     };
 
     return (
-        <div className="input-box">
-            <textarea
+        <Flex
+            px={8}
+            py={6}
+            borderTop="1px"
+            borderColor="gray.200"
+            gap={3}
+            bg="white"
+            maxW="1000px"
+            mx="auto"
+            w="full"
+        >
+            <Textarea
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyPress}
                 placeholder="Type your message... (Enter to send, Shift+Enter for new line)"
-                disabled={disabled}
+                isDisabled={disabled}
                 rows={3}
+                resize="none"
+                flex="1"
+                borderRadius="md"
             />
-            <button
+            <Button
+                colorScheme="blue"
                 onClick={handleSend}
-                disabled={disabled || !input.trim()}
-                className="send-button"
+                isDisabled={disabled || !input.trim()}
+                size="lg"
+                rightIcon={<FiSend />}
             >
                 Send
-            </button>
-        </div>
+            </Button>
+        </Flex>
     );
 }

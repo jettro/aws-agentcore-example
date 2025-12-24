@@ -1,10 +1,5 @@
-# Multi-stage build for GraalVM Native Image
-
-# Stage 1: Build native image using GraalVM
-FROM ghcr.io/graalvm/native-image-community:21-muslib AS builder
-
-# Install Maven
-RUN microdnf install -y findutils
+# Build stage
+FROM public.ecr.aws/docker/library/maven:3.9-amazoncorretto-21 AS builder
 
 WORKDIR /build
 
@@ -12,24 +7,14 @@ WORKDIR /build
 COPY pom.xml .
 COPY src ./src
 
-# Download Maven if not present
-RUN curl -fsSL https://archive.apache.org/dist/maven/maven-3/3.9.6/binaries/apache-maven-3.9.6-bin.tar.gz | tar xz -C /opt
-ENV PATH="/opt/apache-maven-3.9.6/bin:${PATH}"
-
 # Build the application
 RUN mvn clean package -DskipTests
 
-# Build native image
-RUN mvn -Pnative native:compile -DskipTests
+# Runtime stage
+FROM public.ecr.aws/lambda/java:21
 
-# Stage 2: Create minimal runtime image
-FROM public.ecr.aws/lambda/provided:al2023
+# Copy the built JAR
+COPY --from=builder /build/target/backend-lambda-1.0.0.jar ${LAMBDA_TASK_ROOT}/lib/
 
-# Copy the native executable
-COPY --from=builder /build/target/bootstrap ${LAMBDA_RUNTIME_DIR}/bootstrap
-
-# Set execute permissions
-RUN chmod 755 ${LAMBDA_RUNTIME_DIR}/bootstrap
-
-# Set the handler (not used for custom runtime but required)
-CMD [ "unused.handler" ]
+# Set the Lambda handler
+CMD [ "org.springframework.cloud.function.adapter.aws.FunctionInvoker::handleRequest" ]

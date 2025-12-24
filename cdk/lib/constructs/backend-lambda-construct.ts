@@ -20,13 +20,13 @@ export class BackendLambdaConstruct extends Construct {
     constructor(scope: Construct, id: string, props: BackendLambdaConstructProps) {
         super(scope, id);
 
-        // Build Docker image for GraalVM native Lambda
+        // Build Docker image for Java Lambda
         const dockerImageAsset = new DockerImageAsset(this, 'BackendLambdaImage', {
             directory: path.join(__dirname, '../../../backend-lambda'),
             platform: Platform.LINUX_AMD64,
         });
 
-        // Create Lambda function from Docker image
+        // Create Lambda function from Docker image (uses standard Java runtime)
         this.lambdaFunction = new lambda.DockerImageFunction(this, 'BackendLambdaFunction', {
             code: lambda.DockerImageCode.fromEcr(
                 ecr.Repository.fromRepositoryArn(
@@ -39,14 +39,14 @@ export class BackendLambdaConstruct extends Construct {
                 }
             ),
             functionName: 'agentcore-backend-api',
-            description: 'Spring Boot Native Lambda for AgentCore Runtime API',
-            memorySize: props.memorySize || 512, // GraalVM native uses less memory
+            description: 'Spring Boot Lambda for AgentCore Runtime API',
+            memorySize: props.memorySize || 1024, // Standard Java needs more memory than native
             timeout: props.timeout || cdk.Duration.seconds(60),
             architecture: lambda.Architecture.X86_64,
             environment: {
-                AWS_REGION: cdk.Stack.of(this).region,
                 COGNITO_USER_POOL_ID: props.cognitoUserPoolId,
                 AGENTCORE_RUNTIME_ENDPOINT: props.agentCoreEndpoint,
+                SPRING_CLOUD_FUNCTION_DEFINITION: 'agentFunction',
             },
             logRetention: logs.RetentionDays.ONE_WEEK,
         });

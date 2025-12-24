@@ -1,9 +1,9 @@
 import { useState } from 'react';
+import { Box, Flex, Heading, Badge, Alert, AlertIcon, CloseButton } from '@chakra-ui/react';
 import { MessageList } from './MessageList';
 import { InputBox } from './InputBox';
-import { Message } from './types';
+import type {Message} from './types';
 import { agentService } from '../../services/agentService';
-import './ChatInterface.css';
 
 export function ChatInterface() {
     const [messages, setMessages] = useState<Message[]>([]);
@@ -81,23 +81,26 @@ export function ChatInterface() {
     };
 
     return (
-        <div className="chat-interface">
-            <div className="chat-header">
-                <h1>AgentCore Chat</h1>
+        <Flex direction="column" h="calc(100vh - 60px)" maxW="1400px" mx="auto" bg="white">
+            <Flex px={8} py={5} borderBottom="1px" borderColor="gray.200" justify="space-between" align="center" bg="gray.50">
+                <Heading size="lg">AgentCore Chat</Heading>
                 {sessionId && (
-                    <span className="session-id">Session: {sessionId.substring(0, 8)}...</span>
+                    <Badge colorScheme="blue" fontSize="xs" px={3} py={1} borderRadius="full">
+                        Session: {sessionId.substring(0, 8)}...
+                    </Badge>
                 )}
-            </div>
+            </Flex>
 
             {error && (
-                <div className="error-banner">
-                    {error}
-                    <button onClick={() => setError(null)}>×</button>
-                </div>
+                <Alert status="error">
+                    <AlertIcon />
+                    <Box flex="1">{error}</Box>
+                    <CloseButton onClick={() => setError(null)} />
+                </Alert>
             )}
 
             <MessageList messages={messages} />
             <InputBox onSend={handleSendMessage} disabled={isLoading} />
-        </div>
+        </Flex>
     );
 }

@@ -36,7 +36,15 @@ export class MainStack extends cdk.Stack {
         apiStack.addDependency(cognitoStack);
         apiStack.addDependency(agentCoreStack);
 
-        // Deploy CloudFront stack (can be deployed independently)
-        new CloudFrontStack(this, 'CloudFrontStack', props);
+        // Deploy CloudFront stack with frontend auto-build configuration
+        const cloudFrontStack = new CloudFrontStack(this, 'CloudFrontStack', {
+            ...props,
+            cognitoUserPoolId: cognitoStack.cognitoConstruct.userPoolId,
+            cognitoClientId: cognitoStack.cognitoConstruct.userPoolClientId,
+            cognitoDomain: cognitoStack.cognitoConstruct.userPoolDomain.domainName,
+            apiEndpoint: apiStack.apiGatewayConstruct.api.url,
+        });
+        cloudFrontStack.addDependency(cognitoStack);
+        cloudFrontStack.addDependency(apiStack);
     }
 }

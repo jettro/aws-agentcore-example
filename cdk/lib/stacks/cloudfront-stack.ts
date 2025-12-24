@@ -1,24 +1,54 @@
 import * as cdk from 'aws-cdk-lib';
+import * as s3 from 'aws-cdk-lib/aws-s3';
+import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
+import * as origins from 'aws-cdk-lib/aws-cloudfront-origins';
 import { Construct } from 'constructs';
-import { CloudFrontDistributionConstruct } from '../constructs/cloudfront-distribution-construct';
 import { FrontendDeploymentConstruct } from '../constructs/frontend-deployment-construct';
-import * as fs from 'fs';
 import * as path from 'path';
+import * as fs from 'fs';
+
+export interface CloudFrontStackProps extends cdk.StackProps {
+    cognitoUserPoolId: string;
+    cognitoClientId: string;
+    cognitoDomain: string;
+    apiEndpoint: string;
+}
 
 export class CloudFrontStack extends cdk.Stack {
-    public readonly cloudFrontConstruct: CloudFrontDistributionConstruct;
+    public readonly bucket: s3.Bucket;
+    public readonly distribution: cloudfront.Distribution;
     public readonly frontendDeployment?: FrontendDeploymentConstruct;
 
-    constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+    constructor(scope: Construct, id: string, props: CloudFrontStackProps) {
         super(scope, id, props);
 
-        // Create CloudFront distribution using construct
-        this.cloudFrontConstruct = new CloudFrontDistributionConstruct(
-            this,
-            'CloudFrontDistributionConstruct'
-        );
+        // Create S3 bucket for static content
+        this.bucket = new s3.Bucket(this, 'ContentBucket', {
+            removalPolicy: cdk.RemovalPolicy.DESTROY,
+            autoDeleteObjects: true,
+            blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
+            encryption: s3.BucketEncryption.S3_MANAGED,
+            enforceSSL: true,
+        });
 
-        // Check if frontend build exists and deploy it
+        // Create CloudFront distribution
+        this.distribution = new cloudfront.Distribution(this, 'Distribution', {
+            defaultBehavior: {
+                origin: origins.S3BucketOrigin.withOriginAccessControl(this.bucket),
+                viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+                cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
+            },
+            defaultRootObject: 'index.html',
+            errorResponses: [
+                {
+                    httpStatus: 404,
+                    responseHttpStatus: 200,
+                    responsePagePath: '/index.html',
+                },
+            ],
+        });
+
+        // Deploy frontend if the dist directory exists
         const frontendDistPath = path.join(__dirname, '../../../frontend/dist');
         if (fs.existsSync(frontendDistPath)) {
             console.log('Frontend build found, deploying to S3...');
@@ -26,30 +56,30 @@ export class CloudFrontStack extends cdk.Stack {
                 this,
                 'FrontendDeploymentConstruct',
                 {
-                    bucket: this.cloudFrontConstruct.bucket,
-                    distribution: this.cloudFrontConstruct.distribution,
+                    bucket: this.bucket,
+                    distribution: this.distribution,
                 }
             );
         } else {
-            console.log('No frontend build found at', frontendDistPath);
-            console.log('Run "cd frontend && npm run build" to build the frontend before deploying.');
+            console.warn('Frontend build not found at', frontendDistPath);
+            console.warn('Please run "cd frontend && npm run build" before deploying.');
         }
 
         // Export CloudFront domain name and bucket name
         new cdk.CfnOutput(this, 'DistributionDomainName', {
-            value: this.cloudFrontConstruct.distribution.distributionDomainName,
+            value: this.distribution.distributionDomainName,
             description: 'CloudFront Distribution Domain Name',
             exportName: 'BedrockAgentDistributionDomain',
         });
 
         new cdk.CfnOutput(this, 'ContentBucketName', {
-            value: this.cloudFrontConstruct.bucket.bucketName,
+            value: this.bucket.bucketName,
             description: 'S3 Content Bucket Name',
             exportName: 'BedrockAgentContentBucket',
         });
 
         new cdk.CfnOutput(this, 'FrontendUrl', {
-            value: `https://${this.cloudFrontConstruct.distribution.distributionDomainName}`,
+            value: `https://${this.distribution.distributionDomainName}`,
             description: 'Frontend Application URL',
             exportName: 'FrontendApplicationUrl',
         });

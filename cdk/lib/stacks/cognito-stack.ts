@@ -23,5 +23,11 @@ export class CognitoStack extends cdk.Stack {
             description: 'Cognito User Pool Client ID',
             exportName: 'BedrockAgentUserPoolClientId',
         });
+
+        new cdk.CfnOutput(this, 'UserPoolDomain', {
+            value: this.cognitoConstruct.userPoolDomainName,
+            description: 'Cognito User Pool Domain',
+            exportName: 'BedrockAgentUserPoolDomain',
+        });
     }
 }

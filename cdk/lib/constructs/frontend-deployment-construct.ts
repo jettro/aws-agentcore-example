@@ -7,6 +7,7 @@ import * as path from 'path';
 export interface FrontendDeploymentConstructProps {
     bucket: s3.IBucket;
     distribution: cloudfront.IDistribution;
+    sourcePath?: string;
 }
 
 export class FrontendDeploymentConstruct extends Construct {
@@ -15,10 +16,12 @@ export class FrontendDeploymentConstruct extends Construct {
     constructor(scope: Construct, id: string, props: FrontendDeploymentConstructProps) {
         super(scope, id);
 
+        const distPath = props.sourcePath || path.join(__dirname, '../../../frontend/dist');
+
         // Deploy React build to S3 and invalidate CloudFront cache
         this.deployment = new s3deploy.BucketDeployment(this, 'FrontendDeployment', {
             sources: [
-                s3deploy.Source.asset(path.join(__dirname, '../../../frontend/dist'))
+                s3deploy.Source.asset(distPath)
             ],
             destinationBucket: props.bucket,
             distribution: props.distribution,

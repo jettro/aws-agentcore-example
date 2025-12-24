@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
-import { Message } from './types';
-import './MessageList.css';
+import { Box, Flex, Text, Heading, Spinner, VStack } from '@chakra-ui/react';
+import type {Message} from './types';
 
 interface MessageListProps {
     messages: Message[];
@@ -18,41 +18,48 @@ export function MessageList({ messages }: MessageListProps) {
     }, [messages]);
 
     return (
-        <div className="message-list">
+        <VStack flex="1" gap={5} p={8} overflow="auto" maxW="1000px" mx="auto" w="full" align="stretch">
             {messages.length === 0 ? (
-                <div className="empty-state">
-                    <h2>Welcome to AgentCore Chat</h2>
-                    <p>Start a conversation with your AI agent by typing a message below.</p>
-                </div>
+                <Flex direction="column" align="center" justify="center" h="full" textAlign="center">
+                    <Heading size="md" color="gray.600" mb={2}>Welcome to AgentCore Chat</Heading>
+                    <Text color="gray.500" fontSize="sm">
+                        Start a conversation with your AI agent by typing a message below.
+                    </Text>
+                </Flex>
             ) : (
                 messages.map((message) => (
-                    <div
+                    <Flex
                         key={message.id}
-                        className={`message ${message.role}`}
+                        justify={message.role === 'user' ? 'flex-end' : 'flex-start'}
                     >
-                        <div className="message-header">
-                            <span className="message-role">
-                                {message.role === 'user' ? 'You' : 'Agent'}
-                            </span>
-                            <span className="message-time">
-                                {message.timestamp.toLocaleTimeString()}
-                            </span>
-                        </div>
-                        <div className="message-content">
-                            {message.isLoading ? (
-                                <div className="loading-dots">
-                                    <span></span>
-                                    <span></span>
-                                    <span></span>
-                                </div>
-                            ) : (
-                                message.content
-                            )}
-                        </div>
-                    </div>
+                        <Box
+                            maxW="75%"
+                            px={4}
+                            py={3}
+                            borderRadius="lg"
+                            bg={message.role === 'user' ? 'blue.500' : 'gray.100'}
+                            color={message.role === 'user' ? 'white' : 'gray.800'}
+                        >
+                            <Flex justify="space-between" align="center" mb={2} gap={4}>
+                                <Text fontSize="xs" fontWeight="600">
+                                    {message.role === 'user' ? 'You' : 'Agent'}
+                                </Text>
+                                <Text fontSize="xs" opacity={0.7}>
+                                    {message.timestamp.toLocaleTimeString()}
+                                </Text>
+                            </Flex>
+                            <Text fontSize="sm" whiteSpace="pre-wrap" wordBreak="break-word">
+                                {message.isLoading ? (
+                                    <Spinner size="sm" />
+                                ) : (
+                                    message.content
+                                )}
+                            </Text>
+                        </Box>
+                    </Flex>
                 ))
             )}
             <div ref={messagesEndRef} />
-        </div>
+        </VStack>
     );
 }
