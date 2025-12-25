@@ -26,6 +26,7 @@ export class ApiStack extends cdk.Stack {
         this.lambdaConstruct = new BackendLambdaConstruct(this, 'BackendLambdaConstruct', {
             cognitoUserPoolId: props.cognitoUserPoolId,
             agentCoreEndpoint: agentCoreEndpoint,
+            agentCoreRuntimeArn: props.agentCoreRuntimeArn,
             memorySize: 512, // GraalVM native image - minimal memory
             timeout: cdk.Duration.seconds(60),
         });
@@ -51,6 +52,6 @@ export class ApiStack extends cdk.Stack {
     private constructAgentCoreEndpoint(runtimeArn: string, region: string): string {
         // URL encode the ARN (colons become %3A, slashes become %2F)
         const encodedArn = encodeURIComponent(runtimeArn);
-        return `https://bedrock-agentcore.${region}.amazonaws.com/runtimes/${encodedArn}/invocations`;
+        return `https://bedrock-agentcore.${region}.amazonaws.com`;
     }
 }

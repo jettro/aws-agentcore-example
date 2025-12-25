@@ -10,6 +10,7 @@ import { DockerImageAsset, Platform } from 'aws-cdk-lib/aws-ecr-assets';
 export interface BackendLambdaConstructProps {
     cognitoUserPoolId: string;
     agentCoreEndpoint: string;
+    agentCoreRuntimeArn: string;
     memorySize?: number;
     timeout?: cdk.Duration;
 }
@@ -47,6 +48,7 @@ export class BackendLambdaConstruct extends Construct {
                 COGNITO_USER_POOL_ID: props.cognitoUserPoolId,
                 AGENTCORE_RUNTIME_ENDPOINT: props.agentCoreEndpoint,
                 SPRING_CLOUD_FUNCTION_DEFINITION: 'agentFunction',
+                AGENTCORE_RUNTIME_ARN: props.agentCoreRuntimeArn,
             },
             logRetention: logs.RetentionDays.ONE_WEEK,
         });

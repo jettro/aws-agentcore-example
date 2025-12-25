@@ -9,10 +9,14 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.UUID;
 
 @Service
 public class AgentCoreClientService {
@@ -21,6 +25,9 @@ public class AgentCoreClientService {
 
     @Value("${agentcore.runtime.endpoint}")
     private String agentCoreEndpoint;
+
+    @Value("${agentcore.runtime.arn}")
+    private String agentCoreRuntimeArn;
 
     private final HttpClient httpClient;
 
@@ -42,13 +49,19 @@ public class AgentCoreClientService {
         try {
             // Build the request body
             String requestBody = buildRequestBody(request);
+
+            String sessionId = request.sessionId() != null ? request.sessionId() : "session-" + UUID.randomUUID();
+
+            String escapedArn = URLEncoder.encode(agentCoreRuntimeArn, StandardCharsets.UTF_8);
+
+            String uri = URI.create(agentCoreEndpoint + "/runtimes/" + escapedArn + "/invocations?qualifier=DEFAULT").toString();
             
             // Build HTTP request to AgentCore Runtime
             HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
-                    .uri(URI.create(agentCoreEndpoint))
+                    .uri(URI.create(uri))
                     .header("Content-Type", "application/json")
                     .header("Authorization", bearerToken)
-                    .header("X-Amzn-Bedrock-AgentCore-Runtime-User-Id", userId)
+                    .header("X-Amzn-Bedrock-AgentCore-Runtime-Session-Id", sessionId)
                     .timeout(Duration.ofSeconds(60))
                     .POST(HttpRequest.BodyPublishers.ofString(requestBody));
             
