@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { Box, Flex, Heading, Badge, Alert, AlertIcon, CloseButton } from '@chakra-ui/react';
+import { Box, Flex, Heading, Alert, AlertIcon, CloseButton } from '@chakra-ui/react';
 import { MessageList } from './MessageList';
 import { InputBox } from './InputBox';
+import { SessionId } from './SessionId';
 import type {Message} from './types';
 import { agentService } from '../../services/agentService';
 
@@ -12,6 +13,10 @@ export function ChatInterface() {
     const [error, setError] = useState<string | null>(null);
 
     const handleSendMessage = async (content: string) => {
+        console.log('=== Frontend Request Debug ===');
+        console.log('Current sessionId:', sessionId || '(none - first message)');
+        console.log('Prompt:', content);
+        
         // Add user message
         const userMessage: Message = {
             id: `user-${Date.now()}`,
@@ -36,14 +41,21 @@ export function ChatInterface() {
         setMessages((prev) => [...prev, loadingMessage]);
 
         try {
-            const response = await agentService.invokeAgent({
+            const request = {
                 prompt: content,
                 sessionId,
-            });
+            };
+            console.log('Request to backend:', JSON.stringify(request, null, 2));
+            
+            const response = await agentService.invokeAgent(request);
 
             // Update session ID if provided
+            console.log('Response sessionId:', response.sessionId);
             if (response.sessionId) {
+                console.log('Updating sessionId to:', response.sessionId);
                 setSessionId(response.sessionId);
+            } else {
+                console.warn('No sessionId in response!');
             }
 
             // Replace loading message with actual response
@@ -80,15 +92,15 @@ export function ChatInterface() {
         }
     };
 
+    const handleClearSession = () => {
+        setSessionId(undefined);
+    };
+
     return (
         <Flex direction="column" h="calc(100vh - 60px)" maxW="1400px" mx="auto" bg="white">
             <Flex px={8} py={5} borderBottom="1px" borderColor="gray.200" justify="space-between" align="center" bg="gray.50">
                 <Heading size="lg">AgentCore Chat</Heading>
-                {sessionId && (
-                    <Badge colorScheme="blue" fontSize="xs" px={3} py={1} borderRadius="full">
-                        Session: {sessionId.substring(0, 8)}...
-                    </Badge>
-                )}
+                <SessionId sessionId={sessionId} onClear={handleClearSession} />
             </Flex>
 
             {error && (

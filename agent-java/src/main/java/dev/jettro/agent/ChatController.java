@@ -38,8 +38,11 @@ public class ChatController {
 
     @AgentCoreInvocation
     public String agentCoreHandler(PromptRequest promptRequest, AgentCoreContext agentCoreContext){
+        System.out.println("[AGENTCORE] Method invoked - Received prompt: " + promptRequest.prompt());
+        logger.info("Received prompt: {}", promptRequest.prompt());
         var sessionId = agentCoreContext.getHeader(AgentCoreHeaders.SESSION_ID);
-        logger.info(sessionId);
+        System.out.println("[AGENTCORE] Session ID: " + sessionId);
+        logger.info("The session id for the prompt is: {}", sessionId);
 
         return chatClient
                 .prompt()

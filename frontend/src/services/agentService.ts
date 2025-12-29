@@ -1,5 +1,5 @@
-import { fetchAuthSession } from 'aws-amplify/auth';
-import { apiConfig } from '../config/aws-config';
+import {fetchAuthSession} from 'aws-amplify/auth';
+import {apiConfig} from '../config/aws-config';
 
 export interface InvokeRequest {
     prompt: string;
@@ -39,6 +39,11 @@ class AgentService {
         try {
             const token = await this.getAuthToken();
             
+            console.log('=== AgentService HTTP Request ===');
+            console.log('Endpoint:', `${apiConfig.endpoint}/agent/invoke`);
+            console.log('Request body:', JSON.stringify(request, null, 2));
+            console.log('Has sessionId:', !!request.sessionId);
+            
             const response = await fetch(`${apiConfig.endpoint}/agent/invoke`, {
                 method: 'POST',
                 headers: {
@@ -50,11 +55,14 @@ class AgentService {
 
             if (!response.ok) {
                 const errorData: ErrorResponse = await response.json();
+                console.error('Agent invocation failed:', errorData);
                 throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
             }
 
-            const data: InvokeResponse = await response.json();
-            return data;
+            const responseData = await response.json();
+            console.log('=== AgentService HTTP Response ===');
+            console.log('Response:', JSON.stringify(responseData, null, 2));
+            return responseData;
         } catch (error) {
             console.error('Error invoking agent:', error);
             throw error;

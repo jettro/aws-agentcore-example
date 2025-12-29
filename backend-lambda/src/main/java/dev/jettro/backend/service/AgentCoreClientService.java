@@ -39,23 +39,24 @@ public class AgentCoreClientService {
 
     /**
      * Invokes the AgentCore Runtime with the user's prompt
-     * 
-     * @param request The invoke request with prompt and optional sessionId
+     *
+     * @param request     The invoke request with prompt and optional sessionId
      * @param bearerToken The JWT bearer token from the frontend
-     * @param userId The user ID extracted from the token
+     * @param userId      The user ID extracted from the token
      * @return The response from the agent
      */
     public InvokeResponse invokeAgent(InvokeRequest request, String bearerToken, String userId) {
         try {
             // Build the request body
-            String requestBody = buildRequestBody(request);
+            String requestBody = buildRequestBody(request, userId);
 
             String sessionId = request.sessionId() != null ? request.sessionId() : "session-" + UUID.randomUUID();
 
             String escapedArn = URLEncoder.encode(agentCoreRuntimeArn, StandardCharsets.UTF_8);
 
-            String uri = URI.create(agentCoreEndpoint + "/runtimes/" + escapedArn + "/invocations?qualifier=DEFAULT").toString();
-            
+            String uri =
+                    URI.create(agentCoreEndpoint + "/runtimes/" + escapedArn + "/invocations?qualifier=DEFAULT").toString();
+
             // Build HTTP request to AgentCore Runtime
             HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
                     .uri(URI.create(uri))
@@ -64,32 +65,32 @@ public class AgentCoreClientService {
                     .header("X-Amzn-Bedrock-AgentCore-Runtime-Session-Id", sessionId)
                     .timeout(Duration.ofSeconds(60))
                     .POST(HttpRequest.BodyPublishers.ofString(requestBody));
-            
+
             HttpRequest httpRequest = requestBuilder.build();
-            
+
             log.info("Invoking AgentCore Runtime for user: {}", userId);
-            
+
             // Send request
-            HttpResponse<String> response = httpClient.send(httpRequest, 
+            HttpResponse<String> response = httpClient.send(httpRequest,
                     HttpResponse.BodyHandlers.ofString());
-            
+
             if (response.statusCode() >= 200 && response.statusCode() < 300) {
                 log.info("AgentCore invocation successful. Status: {}", response.statusCode());
-                
+
                 // Parse response
                 String agentResponse = parseAgentResponse(response.body());
-                
+
                 return new InvokeResponse(
-                    agentResponse,
-                    request.sessionId(),
-                    userId
+                        agentResponse,
+                        sessionId,
+                        userId
                 );
             } else {
-                log.error("AgentCore invocation failed. Status: {}, Body: {}", 
-                         response.statusCode(), response.body());
+                log.error("AgentCore invocation failed. Status: {}, Body: {}",
+                        response.statusCode(), response.body());
                 throw new RuntimeException("AgentCore invocation failed with status: " + response.statusCode());
             }
-            
+
         } catch (IOException | InterruptedException e) {
             log.error("Error invoking AgentCore Runtime", e);
             Thread.currentThread().interrupt();
@@ -100,16 +101,13 @@ public class AgentCoreClientService {
     /**
      * Builds the request body for AgentCore Runtime
      */
-    private String buildRequestBody(InvokeRequest request) {
+    private String buildRequestBody(InvokeRequest request, String userId) {
         // Simple JSON construction - in production, use Jackson or similar
         StringBuilder json = new StringBuilder("{");
         json.append("\"prompt\":\"").append(escapeJson(request.prompt())).append("\"");
-        
-        if (request.sessionId() != null && !request.sessionId().isBlank()) {
-            json.append(",\"sessionId\":\"").append(escapeJson(request.sessionId())).append("\"");
-        }
-        
+        json.append(",\"actor\":\"").append(escapeJson(userId)).append("\"");
         json.append("}");
+
         return json.toString();
     }
 
@@ -133,9 +131,9 @@ public class AgentCoreClientService {
             return "";
         }
         return value.replace("\\", "\\\\")
-                   .replace("\"", "\\\"")
-                   .replace("\n", "\\n")
-                   .replace("\r", "\\r")
-                   .replace("\t", "\\t");
+                .replace("\"", "\\\"")
+                .replace("\n", "\\n")
+                .replace("\r", "\\r")
+                .replace("\t", "\\t");
     }
 }
