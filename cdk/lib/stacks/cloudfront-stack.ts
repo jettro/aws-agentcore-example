@@ -2,6 +2,7 @@ import * as cdk from 'aws-cdk-lib';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
 import * as origins from 'aws-cdk-lib/aws-cloudfront-origins';
+import * as acm from 'aws-cdk-lib/aws-certificatemanager';
 import { Construct } from 'constructs';
 import { FrontendDeploymentConstruct } from '../constructs/frontend-deployment-construct';
 import * as path from 'path';
@@ -12,6 +13,8 @@ export interface CloudFrontStackProps extends cdk.StackProps {
     cognitoClientId: string;
     cognitoDomain: string;
     apiEndpoint: string;
+    customDomainName?: string;  // e.g., 'agentcore.jettro.dev'
+    certificateArn?: string;     // ACM certificate ARN in us-east-1
 }
 
 export class CloudFrontStack extends cdk.Stack {
@@ -31,6 +34,11 @@ export class CloudFrontStack extends cdk.Stack {
             enforceSSL: true,
         });
 
+        // Import certificate if ARN provided
+        const certificate = props.certificateArn
+            ? acm.Certificate.fromCertificateArn(this, 'Certificate', props.certificateArn)
+            : undefined;
+
         // Create CloudFront distribution
         this.distribution = new cloudfront.Distribution(this, 'Distribution', {
             defaultBehavior: {
@@ -46,6 +54,9 @@ export class CloudFrontStack extends cdk.Stack {
                     responsePagePath: '/index.html',
                 },
             ],
+            // Add custom domain if provided
+            domainNames: props.customDomainName ? [props.customDomainName] : undefined,
+            certificate: certificate,
         });
 
         // Deploy frontend if the dist directory exists

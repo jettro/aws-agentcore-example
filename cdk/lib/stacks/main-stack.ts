@@ -43,6 +43,8 @@ export class MainStack extends cdk.Stack {
             cognitoClientId: cognitoStack.cognitoConstruct.userPoolClientId,
             cognitoDomain: cognitoStack.cognitoConstruct.userPoolDomain.domainName,
             apiEndpoint: apiStack.apiGatewayConstruct.api.url,
+            customDomainName: this.node.tryGetContext('customDomainName'),
+            certificateArn: this.node.tryGetContext('certificateArn'),
         });
         cloudFrontStack.addDependency(cognitoStack);
         cloudFrontStack.addDependency(apiStack);
