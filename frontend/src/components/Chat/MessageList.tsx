@@ -18,7 +18,17 @@ export function MessageList({ messages }: MessageListProps) {
     }, [messages]);
 
     return (
-        <VStack flex="1" gap={5} p={8} overflow="auto" maxW="1000px" mx="auto" w="full" align="stretch">
+        <VStack 
+            flex="1" 
+            gap={5} 
+            px={{ base: 4, md: 6, lg: 8 }} 
+            py={6} 
+            overflow="auto" 
+            maxW="900px" 
+            mx="auto" 
+            w="full" 
+            align="stretch"
+        >
             {messages.length === 0 ? (
                 <Flex direction="column" align="center" justify="center" h="full" textAlign="center">
                     <Heading size="md" color="gray.600" mb={2}>Welcome to AgentCore Chat</Heading>

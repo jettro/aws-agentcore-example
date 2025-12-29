@@ -26,14 +26,10 @@ export function InputBox({ onSend, disabled = false }: InputBoxProps) {
 
     return (
         <Flex
-            px={8}
+            px={{ base: 4, md: 6, lg: 8 }}
             py={6}
-            borderTop="1px"
-            borderColor="gray.200"
             gap={3}
             bg="white"
-            maxW="1000px"
-            mx="auto"
             w="full"
         >
             <Textarea

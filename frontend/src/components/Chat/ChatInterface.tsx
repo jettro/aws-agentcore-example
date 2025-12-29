@@ -97,22 +97,42 @@ export function ChatInterface() {
     };
 
     return (
-        <Flex direction="column" h="calc(100vh - 60px)" maxW="1400px" mx="auto" bg="white">
-            <Flex px={8} py={5} borderBottom="1px" borderColor="gray.200" justify="space-between" align="center" bg="gray.50">
-                <Heading size="lg">AgentCore Chat</Heading>
-                <SessionId sessionId={sessionId} onClear={handleClearSession} />
-            </Flex>
+        <Flex direction="column" h="calc(100vh - 60px)" bg="gray.50">
+            {/* Header */}
+            <Box borderBottom="1px" borderColor="gray.200" bg="white" boxShadow="sm">
+                <Flex 
+                    maxW="900px" 
+                    mx="auto" 
+                    px={{ base: 4, md: 6, lg: 8 }} 
+                    py={5} 
+                    justify="space-between" 
+                    align="center"
+                >
+                    <Heading size={{ base: "md", md: "lg" }}>AgentCore Chat</Heading>
+                    <SessionId sessionId={sessionId} onClear={handleClearSession} />
+                </Flex>
+            </Box>
 
+            {/* Error Alert */}
             {error && (
-                <Alert status="error">
-                    <AlertIcon />
-                    <Box flex="1">{error}</Box>
-                    <CloseButton onClick={() => setError(null)} />
-                </Alert>
+                <Box maxW="900px" mx="auto" w="full" px={{ base: 4, md: 6, lg: 8 }} pt={4}>
+                    <Alert status="error" borderRadius="md">
+                        <AlertIcon />
+                        <Box flex="1">{error}</Box>
+                        <CloseButton onClick={() => setError(null)} />
+                    </Alert>
+                </Box>
             )}
 
+            {/* Messages */}
             <MessageList messages={messages} />
-            <InputBox onSend={handleSendMessage} disabled={isLoading} />
+            
+            {/* Input */}
+            <Box borderTop="1px" borderColor="gray.200" bg="white" boxShadow="lg">
+                <Box maxW="900px" mx="auto" w="full">
+                    <InputBox onSend={handleSendMessage} disabled={isLoading} />
+                </Box>
+            </Box>
         </Flex>
     );
 }
