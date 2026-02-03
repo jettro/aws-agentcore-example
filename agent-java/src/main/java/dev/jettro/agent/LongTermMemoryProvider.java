@@ -3,8 +3,6 @@ package dev.jettro.agent;
 import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ai.tool.annotation.Tool;
-import org.springframework.ai.tool.annotation.ToolParam;
 import software.amazon.awssdk.services.bedrockagentcore.BedrockAgentCoreClient;
 import software.amazon.awssdk.services.bedrockagentcorecontrol.BedrockAgentCoreControlClient;
 import software.amazon.awssdk.services.bedrockagentcorecontrol.model.GetMemoryRequest;
@@ -12,6 +10,7 @@ import software.amazon.awssdk.services.bedrockagentcorecontrol.model.Memory;
 
 import java.util.List;
 
+@Deprecated(forRemoval = true)
 public class LongTermMemoryProvider {
     private static final Logger log = LoggerFactory.getLogger(LongTermMemoryProvider.class);
 

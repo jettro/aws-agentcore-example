@@ -22,8 +22,9 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
-        <aws.sdk.version>2.40.3</aws.sdk.version>
-        <spring-ai.version>1.1.1</spring-ai.version>
+        <aws.sdk.version>2.41.19</aws.sdk.version>
+        <spring-ai.version>1.1.2</spring-ai.version>
+        <spring-ai-community.version>1.0.0-RC5</spring-ai-community.version>
     </properties>
 
     <dependencyManagement>
@@ -59,13 +60,13 @@
         <dependency>
             <groupId>org.springaicommunity</groupId>
             <artifactId>spring-ai-memory-bedrock-agentcore</artifactId>
-            <version>1.0.0-RC2</version>
+            <version>${spring-ai-community.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.springaicommunity</groupId>
             <artifactId>spring-ai-bedrock-agentcore-starter</artifactId>
-            <version>1.0.0-RC2</version>
+            <version>${spring-ai-community.version}</version>
         </dependency>
 
         <dependency>
@@ -100,6 +101,11 @@
             <scope>test</scope>
         </dependency>
 
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>cloudformation</artifactId>
+            <scope>test</scope>
+        </dependency>
 
     </dependencies>
 

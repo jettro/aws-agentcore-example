@@ -1,6 +1,6 @@
 package dev.jettro.agent;
 
-import org.springaicommunity.agentcore.memory.AgentCoreShortMemoryRepositoryConfiguration;
+import org.springaicommunity.agentcore.memory.AgentCoreMemoryProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
@@ -18,7 +18,7 @@ public class AgentsConfiguration {
     @Lazy
     LongTermMemoryProvider longTermMemoryProvider(BedrockAgentCoreControlClient controlClient,
                                                   BedrockAgentCoreClient coreClient,
-                                                  AgentCoreShortMemoryRepositoryConfiguration configuration) {
+                                                  AgentCoreMemoryProperties configuration) {
         return new LongTermMemoryProvider(controlClient, coreClient, configuration.memoryId() );
     }
 }

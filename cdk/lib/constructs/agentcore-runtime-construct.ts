@@ -11,6 +11,9 @@ export interface AgentCoreRuntimeConstructProps {
     dockerfilePath: string;
     imageTag?: string;
     memoryId?: string;
+    summarizationStrategyId?: string;
+    semanticStrategyId?: string;
+    userPreferenceStrategyId?: string;
     cognitoUserPoolId?: string;
     cognitoClientId?: string;
 }
@@ -45,6 +48,17 @@ export class AgentCoreRuntimeConstruct extends Construct {
         // Add memory ID if provided
         if (props.memoryId) {
             environmentVariables['AGENTCORE_MEMORY_ID'] = props.memoryId;
+        }
+        
+        // Add memory strategy IDs if provided
+        if (props.summarizationStrategyId) {
+            environmentVariables['AGENTCORE_SUMMARIZATION_STRATEGY_ID'] = props.summarizationStrategyId;
+        }
+        if (props.semanticStrategyId) {
+            environmentVariables['AGENTCORE_SEMANTIC_STRATEGY_ID'] = props.semanticStrategyId;
+        }
+        if (props.userPreferenceStrategyId) {
+            environmentVariables['AGENTCORE_USER_PREFERENCE_STRATEGY_ID'] = props.userPreferenceStrategyId;
         }
 
         // Configure OAuth authorizer if Cognito details are provided

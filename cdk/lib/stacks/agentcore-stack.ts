@@ -42,6 +42,9 @@ export class AgentCoreStack extends cdk.Stack {
                 dockerfilePath: dockerfilePath,
                 runtimeName: 'bedrock_agent_runtime',
                 memoryId: this.memoryConstruct.memoryId,
+                summarizationStrategyId: this.memoryConstruct.summarizationStrategyId || undefined,
+                semanticStrategyId: this.memoryConstruct.semanticStrategyId || undefined,
+                userPreferenceStrategyId: this.memoryConstruct.userPreferenceStrategyId || undefined,
                 cognitoUserPoolId: props.cognitoUserPoolId,
                 cognitoClientId: props.cognitoClientId,
             }
@@ -71,5 +74,31 @@ export class AgentCoreStack extends cdk.Stack {
             description: 'AgentCore Memory ARN',
             exportName: 'BedrockAgentMemoryArn',
         });
+
+        // Export individual memory strategy IDs (if available)
+        // Currently disabled until AWS SDK supports BedrockAgentCoreControl in Lambda
+        if (this.memoryConstruct.summarizationStrategyId) {
+            new cdk.CfnOutput(this, 'SummarizationStrategyId', {
+                value: this.memoryConstruct.summarizationStrategyId,
+                description: 'Summarization Memory Strategy ID',
+                exportName: 'BedrockAgentSummarizationStrategyId',
+            });
+        }
+
+        if (this.memoryConstruct.semanticStrategyId) {
+            new cdk.CfnOutput(this, 'SemanticStrategyId', {
+                value: this.memoryConstruct.semanticStrategyId,
+                description: 'Semantic Memory Strategy ID',
+                exportName: 'BedrockAgentSemanticStrategyId',
+            });
+        }
+
+        if (this.memoryConstruct.userPreferenceStrategyId) {
+            new cdk.CfnOutput(this, 'UserPreferenceStrategyId', {
+                value: this.memoryConstruct.userPreferenceStrategyId,
+                description: 'User Preference Memory Strategy ID',
+                exportName: 'BedrockAgentUserPreferenceStrategyId',
+            });
+        }
     }
 }

@@ -6,6 +6,7 @@ import software.amazon.awssdk.services.bedrockagentcorecontrol.model.MemoryStrat
 
 import java.util.List;
 
+@Deprecated(forRemoval = true)
 public class LongTermMemoryStrategy {
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(LongTermMemoryStrategy.class);
 

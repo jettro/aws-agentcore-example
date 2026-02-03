@@ -8,6 +8,22 @@ import software.amazon.awssdk.services.bedrockagentcorecontrol.BedrockAgentCoreC
 public class RunLongTermMemory {
     public static void main(String[] args) {
         System.out.println("Load the memory!");
+        
+        // Load configuration from CloudFormation stack
+        // Usage: RunLongTermMemory [stackName] [awsProfile]
+        // Note: Use the nested AgentCore stack, not the main stack
+        String stackName = args.length > 0 ? args[0] : "BedrockAgentCoreStack833DC700";
+        String awsProfile = args.length > 1 ? args[1] : "personal";
+        
+        System.out.println("Loading configuration from CloudFormation stack: " + stackName);
+        System.out.println("Using AWS profile: " + awsProfile);
+        
+        AgentCoreMemoryConfig config = AgentCoreMemoryConfig.fromCloudFormation(stackName, awsProfile);
+        System.out.println("\nLoaded configuration:");
+        System.out.println(config);
+        System.out.println();
+        config.printAsProperties();
+        System.out.println();
 
         BedrockAgentCoreControlClient controlClient = BedrockAgentCoreControlClient.create();
         BedrockAgentCoreClient coreClient = BedrockAgentCoreClient.create();
@@ -15,7 +31,7 @@ public class RunLongTermMemory {
         LongTermMemoryProvider provider = new LongTermMemoryProvider(
                 controlClient,
                 coreClient,
-                "bedrock_agent_memory-5W3Kjk9dLT");
+                config.getMemoryId());
 
         provider.loadStrategies();
 
