@@ -1,14 +1,12 @@
 # Backend Lambda Service
 
-Spring Boot 3 application compiled to GraalVM native image for AWS Lambda, providing a secure API gateway to the AgentCore Runtime.
+Spring Boot 4 application running on AWS Lambda Java 21 runtime, providing a secure API gateway to the AgentCore Runtime.
 
 ## Architecture
 
-- **Framework**: Spring Boot 3 with Spring Cloud Function
-- **Runtime**: GraalVM Native Image (custom Lambda runtime)
+- **Framework**: Spring Boot 4 with Spring Cloud Function
+- **Runtime**: AWS Lambda Java 21
 - **Authentication**: JWT token validation against Amazon Cognito
-- **Cold Start**: ~200-500ms (vs 3-8s for JVM)
-- **Memory**: 256-512 MB (vs 1024-2048 MB for JVM)
 
 ## Features
 
@@ -58,19 +56,18 @@ Required environment variables for Lambda:
 
 - Java 21
 - Maven 3.9+
-- Docker (for native image build)
-- GraalVM 21 (optional, for local native builds)
+- Docker
 
-### Build JAR (for testing)
+### Build JAR
 
 ```bash
 mvn clean package
 ```
 
-### Build Native Image with Docker
+### Build Docker Image
 
 ```bash
-docker build -t backend-lambda-native .
+docker build -t backend-lambda .
 ```
 
 ### Test Locally
@@ -87,58 +84,17 @@ export AGENTCORE_RUNTIME_ENDPOINT=https://...
 mvn spring-boot:run
 ```
 
-## Native Image Build
-
-The native image is built using a multi-stage Docker build:
-
-1. **Builder stage**: Uses GraalVM container to compile Spring Boot app to native executable
-2. **Runtime stage**: Uses AWS Lambda provided.al2023 runtime with the native bootstrap
-
-### Build Process
-
-```bash
-# Build Docker image
-docker build -t backend-lambda-native .
-
-# Extract the native executable (optional)
-docker create --name temp backend-lambda-native
-docker cp temp:/var/runtime/bootstrap ./bootstrap
-docker rm temp
-```
-
 ## Deployment
 
-The Lambda function will be deployed via CDK. The CDK stack will:
+The Lambda function is deployed via CDK. The CDK stack will:
 
 1. Build the Docker image
 2. Push to ECR
-3. Create Lambda function with custom runtime
+3. Create Lambda function with Java 21 runtime
 4. Configure API Gateway integration
 5. Set environment variables from CDK context
 
 See `../cdk/lib/stacks/api-stack.ts` for deployment configuration.
-
-## GraalVM Native Image Considerations
-
-### Supported Features
-
-- Spring Boot Web (without Tomcat)
-- Spring Security OAuth2 Resource Server
-- Spring Cloud Function
-- Nimbus JOSE + JWT
-- Jackson JSON processing
-
-### Limitations
-
-- No reflection-based frameworks (handled via Spring AOT)
-- No dynamic class loading
-- Some Spring Boot features require configuration hints
-
-### Performance Benefits
-
-- **Cold Start**: 200-500ms vs 3-8s (85-93% faster)
-- **Memory**: 256-512 MB vs 1024-2048 MB (50-75% reduction)
-- **Cost**: Significant savings due to lower memory and faster execution
 
 ## Testing
 
@@ -164,12 +120,6 @@ curl -X POST https://your-api-gateway-url/invoke \
 ```
 
 ## Troubleshooting
-
-### Native Image Build Fails
-
-- Ensure you're using the correct GraalVM version (21)
-- Check Maven dependencies are compatible with native image
-- Review native-image build logs in Docker output
 
 ### Token Validation Fails
 
