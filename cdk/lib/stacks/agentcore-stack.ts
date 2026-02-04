@@ -34,6 +34,7 @@ export class AgentCoreStack extends cdk.Stack {
 
         // Create AgentCore Runtime using construct
         // This will automatically build and push the Docker image to the ECR repository
+        // Strategy IDs can be provided via environment variables if not available from construct
         this.agentCoreConstruct = new AgentCoreRuntimeConstruct(
             this,
             'AgentCoreRuntimeConstruct',
@@ -42,9 +43,9 @@ export class AgentCoreStack extends cdk.Stack {
                 dockerfilePath: dockerfilePath,
                 runtimeName: 'bedrock_agent_runtime',
                 memoryId: this.memoryConstruct.memoryId,
-                summarizationStrategyId: this.memoryConstruct.summarizationStrategyId || undefined,
-                semanticStrategyId: this.memoryConstruct.semanticStrategyId || undefined,
-                userPreferenceStrategyId: this.memoryConstruct.userPreferenceStrategyId || undefined,
+                summarizationStrategyId: process.env.SUMMARIZATION_STRATEGY_ID || this.memoryConstruct.summarizationStrategyId || undefined,
+                semanticStrategyId: process.env.SEMANTIC_STRATEGY_ID || this.memoryConstruct.semanticStrategyId || undefined,
+                userPreferenceStrategyId: process.env.USER_PREFERENCE_STRATEGY_ID || this.memoryConstruct.userPreferenceStrategyId || undefined,
                 cognitoUserPoolId: props.cognitoUserPoolId,
                 cognitoClientId: props.cognitoClientId,
             }
