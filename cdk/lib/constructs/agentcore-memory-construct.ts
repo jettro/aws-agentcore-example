@@ -39,6 +39,9 @@ export class AgentCoreMemoryConstruct extends Construct {
                 
                 // Long-term: Captures user preferences and patterns
                 agentcore.MemoryStrategy.usingBuiltInUserPreference(),
+
+                // Long-term: Captures episodic memories
+                // agentcore.MemoryStrategy.usingBuiltInEpisodic(),
             ],
         });
 
@@ -46,57 +49,14 @@ export class AgentCoreMemoryConstruct extends Construct {
         this.memoryId = this.memory.memoryId;
         this.memoryArn = this.memory.memoryArn;
 
-        // TEMPORARILY DISABLED: Custom resource to retrieve memory strategy IDs
-        // The AWS SDK for BedrockAgentCoreControl is not yet available in Lambda runtimes
-        // Uncomment this section once the SDK package is available
-        /*
-        const getMemoryStrategies = new cr.AwsCustomResource(this, 'GetMemoryStrategies', {
-            onCreate: {
-                service: 'BedrockAgentCoreControl',
-                action: 'getMemory',
-                parameters: {
-                    memoryId: this.memoryId,
-                },
-                physicalResourceId: cr.PhysicalResourceId.of(`${this.memoryId}-strategies`),
-            },
-            onUpdate: {
-                service: 'BedrockAgentCoreControl',
-                action: 'getMemory',
-                parameters: {
-                    memoryId: this.memoryId,
-                },
-                physicalResourceId: cr.PhysicalResourceId.of(`${this.memoryId}-strategies`),
-            },
-            policy: cr.AwsCustomResourcePolicy.fromStatements([
-                new iam.PolicyStatement({
-                    effect: iam.Effect.ALLOW,
-                    actions: ['bedrock-agentcore:GetMemory'],
-                    resources: [this.memoryArn],
-                }),
-            ]),
-            logGroup: new logs.LogGroup(this, 'GetMemoryStrategiesLogGroup', {
-                retention: logs.RetentionDays.ONE_DAY,
-                removalPolicy: cdk.RemovalPolicy.DESTROY,
-            }),
-            // Note: This service is very new and might not be in the SDK yet
-            // If deployment fails, this can be commented out temporarily
-            installLatestAwsSdk: true,
-            timeout: cdk.Duration.minutes(2),
-        });
-
-        // Ensure the custom resource runs after the memory is created
-        getMemoryStrategies.node.addDependency(this.memory);
-
-        // Extract strategy IDs from the response
-        // The response structure is: { memory: { memoryStrategies: [{ name, id, ... }] } }
-        // Find each strategy by name and extract its ID
-        this.summarizationStrategyId = getMemoryStrategies.getResponseField('memory.memoryStrategies.0.id');
-        this.semanticStrategyId = getMemoryStrategies.getResponseField('memory.memoryStrategies.1.id');
-        this.userPreferenceStrategyId = getMemoryStrategies.getResponseField('memory.memoryStrategies.2.id');
-        */
-       
-        // Strategy IDs are not available until custom resource is enabled
-        // For now, the LongTermMemoryProvider can load strategies dynamically using GetMemory API
+        // NOTE: Retrieving strategy IDs at deploy time currently isn't possible via AwsCustomResource
+        // because the AWS SDK for JavaScript does not yet include a client/package for
+        // 'BedrockAgentCoreControl'. Attempting to use it results in the deployment error:
+        // "Package @aws-sdk/client-bedrockagentcorecontrol does not exist."
+        //
+        // As a result, we leave the strategy IDs undefined at deploy time. If the application needs
+        // them, fetch them at runtime using the Bedrock AgentCore GetMemory API from the runtime
+        // with the execution role permissions already granted in AgentCoreRuntimeConstruct.
         this.summarizationStrategyId = undefined;
         this.semanticStrategyId = undefined;
         this.userPreferenceStrategyId = undefined;

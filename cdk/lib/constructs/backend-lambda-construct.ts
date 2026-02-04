@@ -30,11 +30,7 @@ export class BackendLambdaConstruct extends Construct {
         // Create Lambda function from Docker image (uses standard Java runtime)
         this.lambdaFunction = new lambda.DockerImageFunction(this, 'BackendLambdaFunction', {
             code: lambda.DockerImageCode.fromEcr(
-                ecr.Repository.fromRepositoryArn(
-                    this,
-                    'BackendImageRepo',
-                    dockerImageAsset.repository.repositoryArn
-                ),
+                dockerImageAsset.repository,
                 {
                     tagOrDigest: dockerImageAsset.imageTag,
                 }
