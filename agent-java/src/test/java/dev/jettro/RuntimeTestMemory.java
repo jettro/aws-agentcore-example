@@ -1,5 +1,6 @@
 package dev.jettro;
 
+import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider;
 import software.amazon.awssdk.core.ResponseInputStream;
 import software.amazon.awssdk.core.SdkBytes;
 import software.amazon.awssdk.regions.Region;
@@ -12,27 +13,29 @@ import java.io.IOException;
 
 public class RuntimeTestMemory {
     public static void main(String[] args) {
-        BedrockAgentCoreClient client = BedrockAgentCoreClient.builder()
+        try (BedrockAgentCoreClient client = BedrockAgentCoreClient.builder()
                 .region(Region.EU_WEST_1)
-                .build();
+                .credentialsProvider(ProfileCredentialsProvider.create("personal")) // Add this
+                .build()) {
 
-        String payload = "{\"prompt\": \"This year was the first year we rented a buscamper. We loved the freedom. We visited Denmark and Switserland. What country do you suggest for next year?\", \"actor\": \"jettro\"}";
-        String sessionId = "session-413e123e-c8c7-45a2-8d1c-5939c0e33b1f";
+            String payload = "{\"prompt\": \"This year was the first year we rented a buscamper. We loved the freedom. We visited Denmark and Switserland. What country do you suggest for next year?\", \"actor\": \"jettro\"}";
+            String sessionId = "session-413e123e-c8c7-45a2-8d1c-5939c0e33b1f";
 
-        InvokeAgentRuntimeRequest request = InvokeAgentRuntimeRequest.builder()
-                .agentRuntimeArn("arn:aws:bedrock-agentcore:eu-west-1:778270100068:runtime/bedrock_agent_runtime-Lc8XuS252H")
-                .runtimeSessionId(sessionId) // Must be 33+ char. Every new SessionId will create a new MicroVM
-                .payload(SdkBytes.fromUtf8String(payload))
-                .build();
+            InvokeAgentRuntimeRequest request = InvokeAgentRuntimeRequest.builder()
+                    .agentRuntimeArn("arn:aws:bedrock-agentcore:eu-west-1:778270100068:runtime/bedrock_agent_runtime-Lc8XuS252H")
+                    .runtimeSessionId(sessionId) // Must be 33+ char. Every new SessionId will create a new MicroVM
+                    .payload(SdkBytes.fromUtf8String(payload))
+                    .build();
 
 
-        try (ResponseInputStream<InvokeAgentRuntimeResponse> responseStream = client.invokeAgentRuntime(request)) {
-            String responseData = IoUtils.toUtf8String(responseStream);
-            System.out.println("Agent Response: " + responseData);
+            try (ResponseInputStream<InvokeAgentRuntimeResponse> responseStream = client.invokeAgentRuntime(request)) {
+                String responseData = IoUtils.toUtf8String(responseStream);
+                System.out.println("Agent Response: " + responseData);
 
-            System.out.println(sessionId);
-        } catch (IOException e) {
-            e.printStackTrace();
+                System.out.println(sessionId);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 }

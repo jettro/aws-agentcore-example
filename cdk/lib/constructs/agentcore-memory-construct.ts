@@ -15,9 +15,6 @@ export class AgentCoreMemoryConstruct extends Construct {
     public readonly memory: agentcore.Memory;
     public readonly memoryId: string;
     public readonly memoryArn: string;
-    public readonly summarizationStrategyId?: string;
-    public readonly semanticStrategyId?: string;
-    public readonly userPreferenceStrategyId?: string;
 
     constructor(scope: Construct, id: string, props: AgentCoreMemoryConstructProps) {
         super(scope, id);
@@ -48,17 +45,5 @@ export class AgentCoreMemoryConstruct extends Construct {
         // Extract memory ID and ARN for use in the application
         this.memoryId = this.memory.memoryId;
         this.memoryArn = this.memory.memoryArn;
-
-        // NOTE: Retrieving strategy IDs at deploy time currently isn't possible via AwsCustomResource
-        // because the AWS SDK for JavaScript does not yet include a client/package for
-        // 'BedrockAgentCoreControl'. Attempting to use it results in the deployment error:
-        // "Package @aws-sdk/client-bedrockagentcorecontrol does not exist."
-        //
-        // As a result, we leave the strategy IDs undefined at deploy time. If the application needs
-        // them, fetch them at runtime using the Bedrock AgentCore GetMemory API from the runtime
-        // with the execution role permissions already granted in AgentCoreRuntimeConstruct.
-        this.summarizationStrategyId = undefined;
-        this.semanticStrategyId = undefined;
-        this.userPreferenceStrategyId = undefined;
     }
 }

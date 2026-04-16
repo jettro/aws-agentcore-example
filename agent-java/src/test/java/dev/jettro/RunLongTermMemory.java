@@ -1,6 +1,5 @@
 package dev.jettro;
 
-import dev.jettro.agent.SearchMemoryRequest;
 import software.amazon.awssdk.services.bedrockagentcore.BedrockAgentCoreClient;
 import software.amazon.awssdk.services.bedrockagentcorecontrol.BedrockAgentCoreControlClient;
 

@@ -204,13 +204,11 @@ Each strategy uses different namespace structures:
 
 ```properties
 # application.properties
-agentcore.memory.id=${AGENTCORE_MEMORY_ID}
-agentcore.memory.strategy.summarization=${AGENTCORE_SUMMARIZATION_STRATEGY_ID}
-agentcore.memory.strategy.semantic=${AGENTCORE_SEMANTIC_STRATEGY_ID}
-agentcore.memory.strategy.userpreference=${AGENTCORE_USER_PREFERENCE_STRATEGY_ID}
+agentcore.memory.memory-id=${AGENTCORE_MEMORY_ID}
+agentcore.memory.long-term.auto-discovery=true
 ```
 
-**Note**: Strategy IDs must currently be fetched at runtime using the AWS SDK since the `@aws-sdk/client-bedrock-agentcore-control` package is not yet available in Lambda. Use `LongTermMemoryProvider.loadStrategies()` to fetch them dynamically.
+**Note**: Spring AI now auto-discovers long-term memory strategies at runtime via the AgentCore `GetMemory` API, so the individual `AGENTCORE_*_STRATEGY_ID` environment variables are no longer needed. The required IAM permissions are already granted to the runtime execution role by `AgentCoreRuntimeConstruct`.
 
 ### Testing Memory Configuration
 
