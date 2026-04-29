@@ -112,6 +112,12 @@
             <scope>test</scope>
         </dependency>
 
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>cognitoidentityprovider</artifactId>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -119,6 +125,22 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+            <!--
+                exec-maven-plugin 3.6.x has a classloader-isolation regression that
+                manifests as "A required class was missing while executing ... :java:
+                software/amazon/awssdk/core/exception/SdkDiagnostics" when the project
+                pulls in newer AWS SDK jars. 3.5.0 works correctly with Maven 3.9 and
+                Java 21. Default classpathScope=test so the helper mains in src/test
+                (BootstrapCognitoAuth, RuntimeTestMemory) can resolve their deps.
+            -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.5.0</version>
+                <configuration>
+                    <classpathScope>test</classpathScope>
+                </configuration>
             </plugin>
         </plugins>
     </build>
