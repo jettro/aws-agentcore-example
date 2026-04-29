@@ -20,9 +20,10 @@ export class AgentCoreMemoryConstruct extends Construct {
         super(scope, id);
 
         // Create memory with all built-in strategies
-        // - Summarization: Short-term memory for conversation context
-        // - Semantic: Long-term memory for factual knowledge
-        // - User Preference: Long-term memory for user behavior patterns
+        // - Summarization: Condensed conversation history
+        // - Semantic: Factual information about users
+        // - User Preference: Explicit settings and choices
+        // - Episodic: Past interactions and lessons
         this.memory = new agentcore.Memory(this, 'Memory', {
             memoryName: props.memoryName,
             description: props.description || `AgentCore memory for ${props.memoryName}`,
@@ -38,7 +39,7 @@ export class AgentCoreMemoryConstruct extends Construct {
                 agentcore.MemoryStrategy.usingBuiltInUserPreference(),
 
                 // Long-term: Captures episodic memories
-                // agentcore.MemoryStrategy.usingBuiltInEpisodic(),
+                agentcore.MemoryStrategy.usingBuiltInEpisodic(),
             ],
         });
 

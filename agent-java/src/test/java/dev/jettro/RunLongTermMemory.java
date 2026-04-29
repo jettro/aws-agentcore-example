@@ -1,7 +1,10 @@
 package dev.jettro;
 
 import software.amazon.awssdk.services.bedrockagentcore.BedrockAgentCoreClient;
+import software.amazon.awssdk.services.bedrockagentcore.model.ListMemoryRecordsRequest;
 import software.amazon.awssdk.services.bedrockagentcorecontrol.BedrockAgentCoreControlClient;
+import software.amazon.awssdk.services.bedrockagentcorecontrol.model.GetMemoryRequest;
+import software.amazon.awssdk.services.bedrockagentcorecontrol.model.GetMemoryResponse;
 
 public class RunLongTermMemory {
     public static void main(String[] args) {
@@ -25,6 +28,24 @@ public class RunLongTermMemory {
 
         BedrockAgentCoreControlClient controlClient = BedrockAgentCoreControlClient.create();
         BedrockAgentCoreClient coreClient = BedrockAgentCoreClient.create();
+
+        ListMemoryRecordsRequest.Builder builder = ListMemoryRecordsRequest.builder();
+        builder.memoryId(config.getMemoryId());
+        builder.maxResults(10);
+        builder.namespace("user");
+        builder.memoryStrategyId("summary_builtin_cdkGen0001-kH60z8CKL1");
+        ListMemoryRecordsRequest request = builder.build();
+
+        var memRecords = coreClient.listMemoryRecords(request);
+
+        System.out.println("***** Print user preference memories:");
+        memRecords.memoryRecordSummaries().forEach(System.out::println);
+
+        var getMemoryRequest = GetMemoryRequest.builder()
+                .memoryId(config.getMemoryId())
+                .build();
+        GetMemoryResponse memory = controlClient.getMemory(getMemoryRequest);
+
 
 //        LongTermMemoryProvider provider = new LongTermMemoryProvider(
 //                controlClient,

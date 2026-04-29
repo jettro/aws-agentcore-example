@@ -24,7 +24,7 @@ export class AgentCoreStack extends cdk.Stack {
             'AgentCoreMemoryConstruct',
             {
                 memoryName: 'bedrock_agent_memory',
-                description: 'Memory for Bedrock agent with summarization, semantic, and user preference strategies',
+                description: 'Memory for Bedrock agent with summarization, semantic, user preference, and episodic strategies',
                 expirationDays: 90,
             }
         );
